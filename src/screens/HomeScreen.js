@@ -28,6 +28,30 @@ const HomeScreen = ({ navigation }) => {
         }
     };
 
+    const receiveData = async (url_64) => {
+        try {
+            const receive_response = await acapy_api.post('/connections/receive-invitation', url_64);
+            console.log("Receive res", receive_response);
+        } catch (err) {
+            console.log(err);
+            console.log('Something went wrong');
+            return {};
+        }
+    };
+
+    const checkConnections = async () => {
+        try {
+            const connection_response = await acapy_api.get('/connections');
+            console.log("Connected to :", JSON.stringify(connection_response.data.results[0].their_label));
+            console.log("Connection state :", JSON.stringify(connection_response.data.results[0].state));
+
+        } catch (err) {
+            console.log(err);
+            console.log('Something went wrong');
+            return {};
+        }
+    };
+
     const createInvite = async () => {
         setpopup(popup => true);
         let response = await data();
@@ -41,6 +65,7 @@ const HomeScreen = ({ navigation }) => {
         console.log(e.data);
         const url_64 = base64.decode(e.data);
         console.log("Base64 Url", url_64);
+        await receiveData(url_64);
     };
 
     return (
@@ -90,6 +115,11 @@ const HomeScreen = ({ navigation }) => {
                         </View>
                     </TouchableOpacity>
                 </Modal>
+                <TouchableOpacity onPress={() => checkConnections()}>
+                    <View style={styles.btn_open}>
+                        <Text style={styles.textstyle_open}>Check connections</Text>
+                    </View>
+                </TouchableOpacity>
             </View>
         </View >
     );
