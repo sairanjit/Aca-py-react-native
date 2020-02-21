@@ -1,20 +1,39 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, Dimensions, Modal } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Dimensions, Modal, KeyboardAvoidingView } from 'react-native';
 import QRCodeScanner from 'react-native-qrcode-scanner';
 import QRCode from 'react-native-qrcode-svg';
 import { RNCamera } from 'react-native-camera';
 import acapy_api from '../api/acapy_api';
 import base64 from 'react-native-base64';
+import axios from 'react-native-axios';
+
 
 const { height, width } = Dimensions.get('screen');
 
 const HomeScreen = ({ navigation }) => {
+
+    // const api = async () => {
+    //     try {
+    //         const acapy_api = axios.create({
+    //             baseURL: `http://${Agenturl}`
+    //         });
+    //         return acapy_api;
+    //     } catch (err) {
+    //         console.log(err);
+    //         console.log('Something went wrong');
+    //     }
+    // }
+
     const [popup, setpopup] = useState(false);
     const [popupcam, setpopupcam] = useState(false);
     const [gen_url, setgenUrl] = useState('');
+    const [con_to, setcon_to] = useState('');
+    const [conn_s, setconn_s] = useState('');
+    // const [Agenturl, setAgenturl] = useState('');
 
     const data = async () => {
         try {
+            // api();
             const response = await acapy_api.post('/connections/create-invitation')
             console.log(response.data.invitation_url);
             const invite_url = response.data.invitation_url;
@@ -42,8 +61,12 @@ const HomeScreen = ({ navigation }) => {
     const checkConnections = async () => {
         try {
             const connection_response = await acapy_api.get('/connections');
-            console.log("Connected to :", JSON.stringify(connection_response.data.results[0].their_label));
-            console.log("Connection state :", JSON.stringify(connection_response.data.results[0].state));
+            const connected_to = JSON.stringify(connection_response.data.results[0].their_label)
+            const connection_status = JSON.stringify(connection_response.data.results[0].state)
+            console.log("Connected to :", connected_to);
+            console.log("Connection state :", connection_status);
+            setcon_to(con_to => connected_to);
+            setconn_s(conn_s => connection_status);
 
         } catch (err) {
             console.log(err);
@@ -69,59 +92,75 @@ const HomeScreen = ({ navigation }) => {
     };
 
     return (
-        <View style={styles.screenstyle}>
-            <View style={styles.topnavigation}>
-                <Text style={styles.navtext}>Home</Text>
-            </View>
-            <View style={{ alignItems: 'center', justifyContent: 'center' }}>
-                <TouchableOpacity onPress={() => createInvite()}>
-                    <View style={styles.btn_create}>
-                        <Text style={styles.textstyle_create}>Create Invitation</Text>
-                    </View>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => setpopupcam(popupcam => true)}>
-                    <View style={styles.btn_open}>
-                        <Text style={styles.textstyle_open}>Receive Invitation</Text>
-                    </View>
-                </TouchableOpacity>
-                <Modal
-                    transparent={true}
-                    visible={popupcam}
-                    onRequestClose={() => setpopupcam(popupcam => false)}
-                >
-                    <QRCodeScanner
-                        cameraStyle={{ height, width, alignSelf: 'center' }}
-                        onRead={(e) => receiveInvite(e)}
-                        flashMode={RNCamera.Constants.FlashMode.off}
-                        showMarker
-                    />
-                </Modal>
-                <Modal
-                    transparent={true}
-                    visible={popup}
-                    onRequestClose={() => setpopup(popup => false)}
-                >
-                    <TouchableOpacity onPress={() => setpopup(popup => false)} style={{ height, justifyContent: 'center', alignItems: 'center', backgroundColor: '#00000070' }}>
-                        <View style={{ height: 300, backgroundColor: 'white', width: 300 }}>
-                            <Text style={{ textAlign: 'center', fontSize: 24, paddingVertical: 10 }}>Scan this invitation url</Text>
-                            {
-                                gen_url == '' ? null : (
-                                    <QRCode
-                                        value={gen_url}
-                                        size={300}
-                                    />
-                                )
-                            }
+        <KeyboardAvoidingView style={styles.screenstyle}>
+            <View>
+                <View style={styles.topnavigation}>
+                    <Text style={styles.navtext}>Home</Text>
+                </View>
+                <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+
+                    {/* <View style={styles.Text_input}>
+                        <TextInput
+                            style={{ fontSize: 20 }}
+                            placeholder={'Enter Agent Url'}
+                            onChangeText={(text) => setAgenturl(Agenturl => text)}
+                            onSubmitEditing={() => api()}
+                        />
+                    </View> */}
+                    <TouchableOpacity onPress={() => createInvite()}>
+                        <View style={styles.btn_create}>
+                            <Text style={styles.textstyle_create}>Create Invitation</Text>
                         </View>
                     </TouchableOpacity>
-                </Modal>
-                <TouchableOpacity onPress={() => checkConnections()}>
-                    <View style={styles.btn_open}>
-                        <Text style={styles.textstyle_open}>Check connections</Text>
+                    <TouchableOpacity onPress={() => setpopupcam(popupcam => true)}>
+                        <View style={styles.btn_open}>
+                            <Text style={styles.textstyle_open}>Receive Invitation</Text>
+                        </View>
+                    </TouchableOpacity>
+                    <Modal
+                        transparent={true}
+                        visible={popupcam}
+                        onRequestClose={() => setpopupcam(popupcam => false)}
+                    >
+                        <QRCodeScanner
+                            cameraStyle={{ height, width, alignSelf: 'center' }}
+                            onRead={(e) => receiveInvite(e)}
+                            flashMode={RNCamera.Constants.FlashMode.off}
+                            showMarker
+                        />
+                    </Modal>
+                    <Modal
+                        transparent={true}
+                        visible={popup}
+                        onRequestClose={() => setpopup(popup => false)}
+                    >
+                        <TouchableOpacity onPress={() => setpopup(popup => false)} style={{ height, justifyContent: 'center', alignItems: 'center', backgroundColor: '#00000070' }}>
+                            <View style={{ height: 300, backgroundColor: 'white', width: 300 }}>
+                                <Text style={{ textAlign: 'center', fontSize: 24, paddingVertical: 10 }}>Scan this invitation url</Text>
+                                {
+                                    gen_url == '' ? null : (
+                                        <QRCode
+                                            value={gen_url}
+                                            size={300}
+                                        />
+                                    )
+                                }
+                            </View>
+                        </TouchableOpacity>
+                    </Modal>
+                    <TouchableOpacity onPress={() => checkConnections()}>
+                        <View style={styles.btn_conn}>
+                            <Text style={styles.textstyle_open}>Check connections</Text>
+                        </View>
+                    </TouchableOpacity>
+                    <View >
+                        <Text style={{ paddingTop: 30, borderBottomWidth: 4, borderBottomColor: '#000000', fontSize: 24 }}>All Connections</Text>
+                        <Text style={{ paddingTop: 40, fontSize: 20, fontWeight: "bold" }}>Connected to : {con_to}</Text>
+                        <Text style={{ fontSize: 20, fontWeight: "bold" }}>Connection state : {conn_s}</Text>
                     </View>
-                </TouchableOpacity>
-            </View>
-        </View >
+                </View>
+            </View >
+        </KeyboardAvoidingView>
     );
 };
 
@@ -150,6 +189,16 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center'
     },
+    Text_input: {
+        marginVertical: 30,
+        width: 300,
+        height: 60,
+        borderWidth: 2,
+        borderColor: '#0455BF',
+        borderRadius: 10,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
     btn_create: {
         marginVertical: 30,
         width: 300,
@@ -162,6 +211,17 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     btn_open: {
+        width: 300,
+        height: 60,
+        borderWidth: 2,
+        borderColor: '#0455BF',
+        borderRadius: 10,
+        backgroundColor: 'transparent',
+        alignItems: 'center',
+        justifyContent: 'center'
+    },
+    btn_conn: {
+        marginVertical: 20,
         width: 300,
         height: 60,
         borderWidth: 2,
