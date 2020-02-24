@@ -29,33 +29,18 @@ const ConnectionScreen = ({ navigation }) => {
             const connection_response = await acapy_api.get('/connections');
             const connected_to = JSON.stringify(connection_response.data.results[0].their_label)
             const connection_status = JSON.stringify(connection_response.data.results[0].state)
+            const connection_name = JSON.stringify(connection_response.data.results[0].alias)
             console.log("Connected to :", connected_to);
             console.log("Connection state :", connection_status);
+            console.log("Connection name :", connection_name);
             setcon_to(con_to => connected_to);
             setconn_s(conn_s => connection_status);
-
+            setaliasName(aliasName => connection_name);
         } catch (err) {
             console.log(err);
             console.log('Something went wrong');
             return {};
         }
-    };
-
-    const createInvite = async () => {
-        console.log('Agent Name', aliasName);
-        setpopup(popup => true);
-        let response = await data();
-        console.log("Response 2", response)
-        setgenUrl(gen_url => response);
-        console.log("gen_url", gen_url)
-    };
-
-    const receiveInvite = async (e) => {
-        setpopupcam(popupcam => false);
-        console.log(e.data);
-        const url_64 = base64.decode(e.data);
-        console.log("Base64 Url", url_64);
-        await receiveData(url_64);
     };
 
     return (
@@ -71,7 +56,7 @@ const ConnectionScreen = ({ navigation }) => {
                 </TouchableOpacity>
                 <View style={{ justifyContent: 'center' }}>
                     <View style={{ alignItems: 'center' }} >
-                        <Text style={{ paddingTop: 30, borderBottomWidth: 4, borderBottomColor: '#000000', fontSize: 24 }}>Ranjit Agent</Text>
+                        <Text style={{ paddingTop: 30, borderBottomWidth: 4, borderBottomColor: '#000000', fontSize: 24 }}>{aliasName} Agent</Text>
                     </View>
                     <View style={{ paddingHorizontal: 20 }}>
                         <Text style={{ paddingTop: 30, fontSize: 24 }}>Connections</Text>

@@ -49,7 +49,8 @@ const HomeScreen = ({ navigation }) => {
 
     const receiveData = async (url_64) => {
         try {
-            const receive_response = await acapy_api.post('/connections/receive-invitation', url_64);
+            const alias = aliasName;
+            const receive_response = await acapy_api.post(`/connections/receive-invitation?alias=${alias}`, url_64);
             console.log("Receive res", receive_response);
         } catch (err) {
             console.log(err);
