@@ -3,39 +3,39 @@ import { View, Text, StyleSheet, TouchableOpacity, TextInput, Dimensions, Modal,
 import QRCodeScanner from 'react-native-qrcode-scanner';
 import QRCode from 'react-native-qrcode-svg';
 import { RNCamera } from 'react-native-camera';
-import acapy_api from '../api/acapy_api';
 import base64 from 'react-native-base64';
 import axios from 'react-native-axios';
-
+import DBServices from '../realm/DBServices';
 
 const { height, width } = Dimensions.get('screen');
 
 const HomeScreen = ({ navigation }) => {
-
-    // const api = async () => {
-    //     try {
-    //         const acapy_api = axios.create({
-    //             baseURL: `http://${Agenturl}`
-    //         });
-    //         return acapy_api;
-    //     } catch (err) {
-    //         console.log(err);
-    //         console.log('Something went wrong');
-    //     }
-    // }
-
     const [popup, setpopup] = useState(false);
     const [popupcam, setpopupcam] = useState(false);
     const [gen_url, setgenUrl] = useState('');
     const [con_to, setcon_to] = useState('');
     const [conn_s, setconn_s] = useState('');
-    // const [Agenturl, setAgenturl] = useState('');
+    const [aliasName, setaliasName] = useState('');
+
+    const Agentdb = DBServices.fetchAgentDB();
+    // console.log(Agentdb);
+    let response1;
+    Agentdb.map(item => {
+        response1 = item["agentUrl"]
+    });
+
+    // console.log('Agent url 2', response1);
+
+    const acapy_api = axios.create({
+        baseURL: `http://${response1}`
+    });
 
     const data = async () => {
         try {
-            // api();
-            const response = await acapy_api.post('/connections/create-invitation')
-            console.log(response.data.invitation_url);
+            const alias = aliasName;
+            const response = await acapy_api.post(`/connections/create-invitation?alias=${alias}`)
+            console.log('Response 1', response.data.invitation_url);
+            console.log('Alias Name', response.data.alias);
             const invite_url = response.data.invitation_url;
             const url = invite_url.split('=')[1];
             console.log("Invitation url", url);
@@ -76,9 +76,10 @@ const HomeScreen = ({ navigation }) => {
     };
 
     const createInvite = async () => {
+        console.log('Agent Name', aliasName);
         setpopup(popup => true);
         let response = await data();
-        console.log("Response", response)
+        console.log("Response 2", response)
         setgenUrl(gen_url => response);
         console.log("gen_url", gen_url)
     };
@@ -98,15 +99,14 @@ const HomeScreen = ({ navigation }) => {
                     <Text style={styles.navtext}>Home</Text>
                 </View>
                 <View style={{ alignItems: 'center', justifyContent: 'center' }}>
-
-                    {/* <View style={styles.Text_input}>
+                    <Text style={{ fontSize: 20, paddingTop: 20 }}>Agent Name</Text>
+                    <View style={styles.Text_input}>
                         <TextInput
                             style={{ fontSize: 20 }}
-                            placeholder={'Enter Agent Url'}
-                            onChangeText={(text) => setAgenturl(Agenturl => text)}
-                            onSubmitEditing={() => api()}
+                            placeholder={'Enter Agent Name'}
+                            onChangeText={(text) => setaliasName(aliasName => text)}
                         />
-                    </View> */}
+                    </View>
                     <TouchableOpacity onPress={() => createInvite()}>
                         <View style={styles.btn_create}>
                             <Text style={styles.textstyle_create}>Create Invitation</Text>
@@ -148,16 +148,11 @@ const HomeScreen = ({ navigation }) => {
                             </View>
                         </TouchableOpacity>
                     </Modal>
-                    <TouchableOpacity onPress={() => checkConnections()}>
+                    <TouchableOpacity onPress={() => navigation.navigate('Connection')}>
                         <View style={styles.btn_conn}>
-                            <Text style={styles.textstyle_open}>Check connections</Text>
+                            <Text style={styles.textstyle_open}>Go to Connections page</Text>
                         </View>
                     </TouchableOpacity>
-                    <View >
-                        <Text style={{ paddingTop: 30, borderBottomWidth: 4, borderBottomColor: '#000000', fontSize: 24 }}>All Connections</Text>
-                        <Text style={{ paddingTop: 40, fontSize: 20, fontWeight: "bold" }}>Connected to : {con_to}</Text>
-                        <Text style={{ fontSize: 20, fontWeight: "bold" }}>Connection state : {conn_s}</Text>
-                    </View>
                 </View>
             </View >
         </KeyboardAvoidingView>
@@ -221,12 +216,10 @@ const styles = StyleSheet.create({
         justifyContent: 'center'
     },
     btn_conn: {
+        paddingTop: 80,
         marginVertical: 20,
-        width: 300,
-        height: 60,
-        borderWidth: 2,
+        borderBottomWidth: 2,
         borderColor: '#0455BF',
-        borderRadius: 10,
         backgroundColor: 'transparent',
         alignItems: 'center',
         justifyContent: 'center'

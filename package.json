@@ -29,7 +29,8 @@
     "react-native-vector-icons": "6.6.0",
     "react-native-webview": "8.1.1",
     "react-navigation": "4.1.1",
-    "react-navigation-stack": "2.1.1"
+    "react-navigation-stack": "2.1.1",
+    "realm": "3.6.4"
   },
   "devDependencies": {
     "@babel/core": "7.8.4",
