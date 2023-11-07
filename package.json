@@ -30,7 +30,7 @@
     "react-native-webview": "8.1.1",
     "react-navigation": "4.1.1",
     "react-navigation-stack": "2.1.1",
-    "realm": "3.6.4"
+    "realm": "12.3.0"
   },
   "devDependencies": {
     "@babel/core": "7.8.4",
@@ -38,7 +38,7 @@
     "@react-native-community/eslint-config": "0.0.5",
     "babel-jest": "24.9.0",
     "eslint": "6.8.0",
-    "jest": "24.9.0",
+    "jest": "29.7.0",
     "metro-react-native-babel-preset": "0.56.4",
     "react-test-renderer": "16.9.0"
   },
